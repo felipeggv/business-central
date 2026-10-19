@@ -1,4 +1,4 @@
-# Dossiê de Posicionamento
+# Business Central · Felipe Gobbi
 
 Documento confidencial. O conteúdo é cifrado com **AES-256-GCM**; a chave é derivada da senha por PBKDF2-SHA256 com 600 mil iterações.
 
