@@ -47,8 +47,11 @@ nav a[aria-current=page]{color:#fff;border-bottom-color:#a9d0b8}nav a[aria-curre
 .hero{padding:10px 0 40px}.hero h1{margin:20px 0}
 @media(max-width:1250px){.gc-wrap{grid-template-columns:minmax(0,1fr) 350px}}
 @media(max-width:980px){
-.gc-wrap{display:block;height:auto}.gc-grid{display:none;max-height:70vh;border-bottom:1px solid var(--line)}body.showweek .gc-grid{display:block}
-.gc-detail{border-left:0;padding:20px 6% 40px}
+.gc-wrap{display:block;height:auto}.gc-grid{display:none;max-height:62vh;border-bottom:1px solid var(--line)}body.showweek .gc-grid{display:block}body.showweek .daystrip{display:none}
+.gc-head,.gc-body{grid-template-columns:34px repeat(6,minmax(0,1fr));min-width:0}.gc-dayhead{padding:6px 0}.gc-dayhead b{width:34px;height:34px;font-size:18px;margin:1px 0}.gc-dayhead em{display:none}
+.gc-hours span{right:3px;font-size:9px}.gc-ev{left:1px;right:2px;padding:2px 3px;font-size:10px;line-height:1.15;border-radius:4px}.gc-ev span{display:none}.gc-ev strong{white-space:normal;font-weight:600}
+aside nav{scrollbar-width:none}
+.gc-detail{border-left:0;padding:20px 6% 40px;scroll-margin-top:8px}
 .daystrip{display:grid;grid-template-columns:repeat(6,1fr);position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
 .daystrip .gc-dayhead{border-left:0;padding:8px 0}.daystrip .gc-dayhead b{width:38px;height:38px;font-size:20px}.daystrip .gc-dayhead em{display:none}
 .gc-top{padding:14px 6%}.legend{padding:10px 6%}}
@@ -62,7 +65,7 @@ nav a[aria-current=page]{color:#fff;border-bottom-color:#a9d0b8}nav a[aria-curre
 <aside><a class="brand" href="#calendario">Família Gobbi<br><i>Gramado Central</i></a><p class="meta">30 nov — 05 dez 2026<br>7 pessoas · 5 noites</p><nav aria-label="Seções do guia"><a href="#calendario"><span>00</span>Calendário</a><a href="#painel"><span>01</span>Visão geral</a><a href="#transporte"><span>02</span>Carro × Uber</a><a href="#ingressos"><span>03</span>Passeios e ingressos</a><a href="#comer"><span>04</span>Onde comer</a><a href="#orcamento"><span>05</span>Orçamento</a><a href="#checklist"><span>06</span>Antes de embarcar</a><a href="#fontes"><span>07</span>Fontes e pendências</a></nav><div class="sidebtns"><button id="theme" aria-pressed="false">Noite</button><button id="print">Imprimir / PDF</button></div><small>Valores para o grupo inteiro.<br>Pesquisa em 12/11/2026 · horários de Brasília.</small></aside>
 <main id="conteudo">
 <section id="calendario" class="view active">
-<div class="gc-top"><h1>Dezembro de 2026<span>30 nov – 5 dez · Gramado em família</span></h1><span class="grow"></span><button id="toggle-week" class="mobileonly" aria-pressed="false">Ver semana</button><button id="ics">Baixar para a agenda</button></div>
+<div class="gc-top"><h1>Dezembro de 2026<span>30 nov – 5 dez · Gramado em família</span></h1><span class="grow"></span><button id="toggle-week" class="mobileonly">Ocultar semana</button><button id="ics">Baixar para a agenda</button></div>
 <div class="legend"><span class="k-voo"><i></i>Voo</span><span class="k-transporte"><i></i>Deslocamento</span><span class="k-passeio"><i></i>Passeio</span><span class="k-refeicao"><i></i>Refeição</span><span class="k-descanso"><i></i>Descanso</span><span class="k-hospedagem"><i></i>Hospedagem</span><span class="k-natal"><i></i>Natal</span><span>Contorno claro = opcional · toque em um dia para ver a programação escrita</span></div>
 <div class="daystrip" id="daystrip"></div>
 <div class="gc-wrap"><div class="gc-grid" tabindex="0" role="region" aria-label="Semana da viagem"><div class="gc-head" id="gc-head"></div><div class="gc-body" id="gc-body"></div></div><div class="gc-detail" id="gc-detail" aria-live="polite"></div></div>
@@ -772,7 +775,7 @@ function dayArticle(day,i,withNav){
   box.append(list,el('p','daynote',day.note));
   return box;
 }
-function selectDay(i,j){
+function selectDay(i,j,scroll=true){
   current=i;
   document.querySelectorAll('.gc-dayhead').forEach(b=>b.setAttribute('aria-pressed',String(Number(b.dataset.day)===i)));
   document.querySelectorAll('.gc-col').forEach(c=>c.classList.toggle('sel',Number(c.dataset.day)===i));
@@ -781,7 +784,8 @@ function selectDay(i,j){
   if(j!=null){
     document.querySelector('.gc-ev[data-ev="'+i+'-'+j+'"]').classList.add('hit');
     const li=document.getElementById('ev-'+i+'-'+j);li.classList.add('hit');li.scrollIntoView({block:'center',behavior:'smooth'});
-  }else if(getComputedStyle(panel).overflowY==='auto')panel.scrollTop=0;
+  }else panel.scrollTop=0;
+  if(scroll&&j==null&&window.matchMedia('(max-width:980px)').matches)panel.scrollIntoView({block:'start',behavior:'smooth'});
 }
 function calendarICS(days){
   const esc=v=>v.replace(/\\/g,'\\\\').replace(/\n/g,'\\n').replace(/;/g,'\\;').replace(/,/g,'\\,');
@@ -802,10 +806,10 @@ function showView(){
 }
 renderGrid();
 const today=new Date().toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'});
-selectDay(Math.max(0,tripDays.findIndex(d=>d.date===today)));
+selectDay(Math.max(0,tripDays.findIndex(d=>d.date===today)),null,false);document.body.classList.add('showweek');
 const pd=document.getElementById('printdays');tripDays.forEach((d,i)=>{if(i!==current)pd.append(dayArticle(d,i,false));});
 window.addEventListener('hashchange',showView);showView();
-document.getElementById('toggle-week').addEventListener('click',function(){const on=document.body.classList.toggle('showweek');this.setAttribute('aria-pressed',String(on));});
+document.getElementById('toggle-week').addEventListener('click',function(){const on=document.body.classList.toggle('showweek');this.textContent=on?'Ocultar semana':'Ver semana';});
 document.getElementById('ics').addEventListener('click',()=>{const url=URL.createObjectURL(new Blob([calendarICS(tripDays)],{type:'text/calendar;charset=utf-8'}));const a=el('a');a.href=url;a.download='Gramado-Familia-2026.ics';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);});
 document.getElementById('theme').addEventListener('click',function(){const on=document.body.classList.toggle('dark');this.setAttribute('aria-pressed',String(on));this.textContent=on?'Dia':'Noite';});
 document.getElementById('print').addEventListener('click',()=>window.print());
